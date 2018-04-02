@@ -1,8 +1,21 @@
+* {
+    box-sizing: border-box;
+}
 .container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .smol {
+    height: 8em;
 }
 
 .col {
+    flex: content;
+    text-align: center;
+    font-size: 25px;
+    border: dotted black;
+    padding: 1em;
+    margin: 1em;
 }

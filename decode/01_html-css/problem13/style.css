@@ -1,0 +1,24 @@
+* {
+    box-sizing: border-box;
+    font-size: 15px;
+}
+body {
+    margin: 6rem;
+}
+.animal {
+    height: 30%;
+    margin: 5rem;
+}
+img {
+    height: 8rem;
+}
+.species {
+    border: dashed black;
+    padding: 1rem;
+    margin: 2rem;
+    text-align: center;
+}
+.pics {
+    display: flex;
+
+}
