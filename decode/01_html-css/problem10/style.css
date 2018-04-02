@@ -1,0 +1,20 @@
+div {
+    background-color: gray;
+}
+.centered {
+    text-align: center;
+}
+#title {
+    font-size: 25pt;
+}
+#subtitle {
+    font-size: 15pt;
+}
+#content {
+    text-decoration: underline;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10pt;
+}
+li {
+    list-style: none;
+}
