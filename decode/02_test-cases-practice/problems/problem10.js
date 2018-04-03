@@ -2,11 +2,19 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
-  
+  'hello from montreal',
+  'mOrE fIsH In mUddY WatEr',
+  '111',
+  false,
+  null
 ]
 
 let outputs = [
-  
+  'Hello From Montreal',
+  'More Fish In Muddy Water',
+  '111',
+  undefined,
+  undefined
 ]
 
 /*
@@ -17,7 +25,17 @@ f("ALL YOUR BASE ARE BELONG"); // All Your Base Are Belong
 
 */
 function f(str) {
-    
+    if (typeof str != 'string') return undefined;
+    return str
+    .split(' ')
+    .map(word=>{
+        let newWord = '';
+        for (let i = 0; i < word.length; i++) {
+            if (i==0) newWord+= word[i].toUpperCase();                                
+            else newWord+= word[i].toLowerCase();
+        } 
+        return newWord;
+    }).join(' ');
 }
 
 function runTest(i) {

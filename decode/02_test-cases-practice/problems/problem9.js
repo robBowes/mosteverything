@@ -2,11 +2,19 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
-  
+  'hello from Montreal',
+  'the rat has two pie',
+  true,
+  undefined,
+  null
 ]
 
 let outputs = [
-  
+  'Montreal',
+  'pie',
+  undefined,
+  undefined,
+  undefined
 ]
 
 /*
@@ -14,7 +22,8 @@ Make this function return the longest word in the input string. If the input str
 If multiple words have the same length, return the last one that matches.
 */
 function f(str) {
-    
+    if (typeof str != 'string') return undefined;    
+    return str.split(' ').reduce((acc, el)=>acc.length>el.length?acc:el,'');
 }
 
 function runTest(i) {

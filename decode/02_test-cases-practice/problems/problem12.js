@@ -2,11 +2,19 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
-  
+  [[0,1,2,3], [1,2,3,4,5]],
+  [[1,2,3], [1,2,3]],
+  [2,3],
+  [['apple', 'orange'],['apple', 'banana']],
+  [undefined, ['apple']]
 ]
 
 let outputs = [
-  
+  [0,4,5],
+  [],
+  undefined,
+  ['orange', 'banana'],
+  undefined
 ]
 
 /*
@@ -19,8 +27,10 @@ uniqueElements([0,1,2,3], [1,3,4,5]); // [0,4,5]
 uniqueElements([1,2,3], [1,2,3]); // []
 uniqueElements(2,3); // undefined, not arrays
 */
-function f(arr1, arr2) {
-    
+function f(args) {
+    let [arr1, arr2] = args;
+    if (!Array.isArray(arr1)|| !Array.isArray(arr2)) return undefined; 
+    return [...arr1.filter(el=>arr2.indexOf(el)<0), ...arr2.filter(el=>arr1.indexOf(el)<0)];
 }
 
 function runTest(i) {

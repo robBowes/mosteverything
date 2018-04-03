@@ -2,18 +2,28 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
-  [2, 7]
+  [2, 7],
+  [true, false],
+  [null, 1],
+  [undefined, 1],
+  [10,10],
 ]
 
 let outputs = [
-  14
+  14,
+  undefined,
+  undefined,
+  undefined,
+  100,
 ]
 
 /*
 Make this function return the product of the two numbers that are passed to it. If one of the numbers is not passed, or if anything other than numbers are passed, return undefined.
 */
-function f(x, y) {
-    
+function f(arr) {
+  let [x,y] = arr;
+  if (typeof x!= 'number'|| typeof y != 'number') return undefined;
+  return x*y;
 }
 
 function runTest(i) {

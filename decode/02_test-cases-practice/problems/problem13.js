@@ -2,11 +2,19 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
-  
+  'radar',
+  'asdfasdf',
+  null,
+  'Are we not pure? “No, sir!” Panama’s moody Noriega brags. “It is garbage!” Irony dooms a man—a prisoner up to new era.',
+  true
 ]
 
 let outputs = [
-  
+  true,
+  false,
+  false,
+  true,
+  false
 ]
 
 /*
@@ -16,7 +24,11 @@ RADAR -> Yes
 JAVASCRIPT -> No
 */
 function f(str) {
-    
+    if (typeof str !== 'string') return false;
+    let onlyChars = str.toLowerCase().match(/[A-Za-z0-9]/g)    
+    return onlyChars.every((el,i,arr)=>{
+        return el==arr[arr.length-1-i];
+    }); 
 }
 
 function runTest(i) {

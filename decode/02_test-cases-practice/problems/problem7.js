@@ -2,11 +2,22 @@ var assert = require('assert');
 
 // we need 7 test cases. 
 let inputs = [
-  
+  ['foo', 3],
+  ['fo', 3],
+  ['foo', -1],
+  [null],
+  [undefined, 2],
+  [2, 2],
+  [true, 2],
 ]
 
 let outputs = [
-  
+  'foofoofoo',
+  'fofofo',
+  undefined,
+  undefined,
+  undefined,
+  undefined
 ]
 
 /*
@@ -20,7 +31,8 @@ f(["fo", 3]) // "fofofo"
 f(["foo", -1]) // undefined
 */
 function f(arr) {
-    
+    if (typeof arr[0] != 'string'|| typeof arr[1] != 'number' || arr[1]<0) return undefined;
+    return arr[0].repeat(arr[1]);
 }
 
 function runTest(i) {
