@@ -2,12 +2,20 @@ var assert = require('assert');
 
 // we need 5 test cases. 
 let inputs = [
+    'Sometimes the most clever thing to say is nothing at all.',
+    'Lorem ipsumos dolor sit amet consectetur adipisicing elit. Magni quisquam',
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt",
+    true,
+    undefined
+  ]
   
-]
-
-let outputs = [
-  
-]
+  let outputs = [
+      'Sometimes the most clever thing to say i\ns nothing at all.',
+      'Lorem ipsumos dolor sit amet consectetur\nadipisicing elit. Magni quisquam',
+      "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit, sed do eiusmod tempor i\nncididunt",
+      undefined,
+      undefined
+  ]
 
 /*
 Make this function return the input string wrapped to 40 characters per line. 
@@ -30,8 +38,16 @@ Lorem ipsumos dolor sit amet consectetur
 
  even though there is a space before the a in adipisicing
 */
-function f(str) {
-    
+function f(str) {    
+    if (typeof str != 'string') return undefined;
+    return str
+    .split('')
+    .map((el,i)=>{
+        if ((i+1)%40==0 && i !=0) return el + '\n';
+        if (i%40==0) return el.replace(/\s/,'');
+        return el;
+    })
+    .join('');
 }
 
 function runTest(i) {

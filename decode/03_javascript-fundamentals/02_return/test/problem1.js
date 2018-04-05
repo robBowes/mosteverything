@@ -1,12 +1,12 @@
 var expect = require('chai').expect;
 
-var f = require('../../src/return/problem1.js');
+var f = require('../src/problem1.js');
 
 var fs = require('fs')
 var source = fs.readFileSync(__dirname + '/../src/problem1.js').toString();
 source = source.replace(/\s/g, "")
-console.log(source);
-
+console.log(source, f);
+console.log('test');
 
 describe('Source', function() {
     it('is less than 85 characters', function() {
