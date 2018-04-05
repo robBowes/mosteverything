@@ -5,5 +5,5 @@ function f() {
     return "hello";
 }
 
-console.log(f());
+console.log(f()); //output: 5
 
