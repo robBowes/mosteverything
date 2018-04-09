@@ -2,18 +2,18 @@ For each of the following expressions:
  - Does it have a syntax error?
  - If it doesn't have a syntax error, what are the probable input and output types of the function?
 
-a) x => x + 1
+a) x => x + 1 // n, num, num
 
-b) x, y => x * y
+b) x, y => x * y // yes, needs parens
 
-c) x => { x * 2 }
+c) x => { x * 2 } // no, num, undefined
 
-d) (x, z) => {console.log(z); return x * z}
+d) (x, z) => {console.log(z); return x * z} // no, num, num
 
-e) x => console.log(z); return x * z
+e) x => console.log(z); return x * z // yes, needs curly brackets
 
-f) (x) => x * 2
+f) (x) => x * 2 // no, num, num
 
-e) () => console.log("hello")
+e) () => console.log("hello") // no, none, undefined
 
-When you're done, check all your answers in the developer console.
+When you're done, check all your answers in the developer console. 

@@ -9,7 +9,7 @@ var obj = {
 
 var obj2 = {
     bar: function() {console.log(this.baz + 2);},
-    baz: 12
+    baz: 16
 }
 
 obj2.bar = obj.bar;
