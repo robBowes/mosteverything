@@ -1,9 +1,17 @@
 html,body, .game_area {
     height: 95%;
 }
+h1 {
+    font-size: 4rem;
+}
 body {
     background: url('cover.jpg');
     background-size: cover;
+    font-family: 'Rye', cursive;
+    background-repeat: no-repeat;
+    transition: linear 2s;
+}
+button {
     font-family: 'Rye', cursive;
 }
 .game_area {
@@ -12,12 +20,6 @@ body {
     grid-gap: 0.5rem;
     text-align: center;
 }
-/* .player1canvas {
-    grid-area: 3/1;
-}
-.player2canvas {
-    grid-area: 3/3;
-} */
 .title {
     grid-area: 1/2;
 }
@@ -35,6 +37,14 @@ body {
     font-size: 4rem;
 }
 .container {
-    background-color: rgba(166, 168, 56, 0.4);
+    /* background-color: rgba(166, 168, 56, 0.4); */
+    background: url('container.jpg');
+    background-size: cover;
+    opacity: 0.8;
     border-radius: 0.5rem;
+    transition: linear 1s;
+}
+.image {
+    image-rendering: pixelated;
+    /* image-rendering: -webkit-op timize-contrast;    */
 }
