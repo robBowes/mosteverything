@@ -1,0 +1,8 @@
+html,body,div {
+    height: 100%;
+}
+h1 {
+    height: 100%;
+    margin: 50% 0;
+    text-align: center
+}

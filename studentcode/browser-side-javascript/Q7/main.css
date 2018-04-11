@@ -1,0 +1,9 @@
+body {
+    margin: 0;
+}
+html,body,.game_area {
+    height: 100%;
+}
+#start {
+    margin: 20%;
+}

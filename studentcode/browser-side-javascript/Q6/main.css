@@ -1,0 +1,10 @@
+html,body,.game_area {
+    height: 100%;
+}
+.game_area {
+    display: grid;
+    grid-template: repeat(5, 1fr) / repeat(5, 1fr)
+}
+#start {
+    grid-area: 3/3;
+}

@@ -1,0 +1,7 @@
+html,body,.game_area {
+    height: 100%;
+}
+h1{
+    margin: 50% 0 0 0;
+    text-align: center;
+}

@@ -1,0 +1,24 @@
+html,body, .game_area {
+    height: 95%;
+}
+.game_area {
+    display: grid;
+    grid-template: 1fr 1fr 1fr / 1fr 3fr 1fr;
+    text-align: center;
+}
+.title {
+    grid-area: 1/2;
+}
+.player1 {
+    grid-area: 2/1;
+}
+.player2 {
+    grid-area: 2/3;
+}
+.big {
+    font-size: 4rem;
+}
+.main {
+    text-align: center;
+    font-size: 4rem;
+}

@@ -1,0 +1,40 @@
+html,body, .game_area {
+    height: 95%;
+}
+body {
+    background: url('cover.jpg');
+    background-size: cover;
+    font-family: 'Rye', cursive;
+}
+.game_area {
+    display: grid;
+    grid-template: 1fr 1fr 1fr / 1fr 3fr 1fr;
+    grid-gap: 0.5rem;
+    text-align: center;
+}
+/* .player1canvas {
+    grid-area: 3/1;
+}
+.player2canvas {
+    grid-area: 3/3;
+} */
+.title {
+    grid-area: 1/2;
+}
+.player1 {
+    grid-area: 2/1;
+}
+.player2 {
+    grid-area: 2/3;
+}
+.big {
+    font-size: 4rem;
+}
+.main {
+    text-align: center;
+    font-size: 4rem;
+}
+.container {
+    background-color: rgba(166, 168, 56, 0.4);
+    border-radius: 0.5rem;
+}
