@@ -16,7 +16,6 @@ game = () =>{
         }
         gameFinished = true;
     })
-
     document.querySelector('.game_area').addEventListener('click', ()=>{
         button.remove();
         createH1('You Lose!!');
@@ -28,7 +27,7 @@ game = () =>{
             createH1('You Lose!!')
         }
         gameFinished = true;
-    }, 1000)
+    }, 1500)
 }
 
 createH1 = (str) => {

@@ -5,10 +5,10 @@ const score = {'player1': 0,
 'player2': 0};
 const A = {
     'whip': new Audio('whip.mp3'),
-    'theme' : new Audio('theme.mp3'),
+    'theme' : new Audio('theme.mp3'),   
     'outro' :new Audio('outro.mp3'), 
     'gunshot' : new Audio('gunshot.mp3'), 
-    'ricochet' : new Audio('ricochet.mp3')
+    'ricochet' : new Audio('ricochet.mp3'),
 }
 gameStart = () => {
     A.theme.play();

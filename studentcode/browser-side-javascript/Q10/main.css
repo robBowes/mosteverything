@@ -3,6 +3,7 @@ html,body, .game_area {
 }
 h1 {
     font-size: 4rem;
+    font-weight: normal;
 }
 body {
     background: url('cover.jpg');
@@ -43,6 +44,7 @@ button {
     opacity: 0.8;
     border-radius: 0.5rem;
     transition: linear 1s;
+    animation: forwards;
 }
 .image {
     image-rendering: pixelated;

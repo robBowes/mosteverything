@@ -29,6 +29,30 @@ class h1 {
         return ret;
     }
 }
+class ul {
+    constructor(arr) {
+        this.items = arr;
+    }
+    render() {  
+        let ret = document.createElement('ul');
+        this.items.forEach(el => {
+            ret.appendChild(el.render())
+        });
+        return ret;
+    }
+}
+class li {
+    constructor(str) {
+        this.text = str;
+    }
+    render() {
+        let ret = document.createElement('li');
+        ret.innerText = this.text;
+        return ret;
+    }
+}
+
+
 
 
 populate(document.getElementById('root'),
