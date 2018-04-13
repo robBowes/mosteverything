@@ -5,25 +5,15 @@ window.onload = ()=>{
     let width = canvas.width;
     let height = canvas.height;
     let c = canvas.getContext('2d');
-    let ship = new Ship([width/2, height/2])
-    ship.draw(c);
+    let ships = [
+        new Ship([width/2+0.5, height/2+0.5]),
+        new Ship([width/2+100, height/2]),
+        new Ship([width/2-100, height/2]),
+    ]
+    console.log(ships);
     
-    // c.save();
-    // c.translate(width/2, height/4);
-    // c.beginPath();
-    // c.moveTo(-10,0);
-    // c.lineTo(10,0);
-    // c.moveTo(0,-10);
-    // c.lineTo(0,0);
-    // c.stroke();
-    // c.restore();    
+    ships.forEach(el=>el.draw(c))    
     
-    // for (let index = 0; index < 20; index++) {
-    //     c.save();
-    //     c.translate(width/2, height-index*20);
-    //     c.fillRect(0,0,1,1)
-    //     c.restore()
-    // }
 };
 class Ship {
     constructor(center) {
@@ -33,10 +23,27 @@ class Ship {
         c.save();
         c.translate(...this.center)
         c.beginPath();
-        c.moveTo(0,-10);
-        c.lineTo(5,0);
-        c.lineTo(20,20);
+        this.shipLines(c,1)
+        this.shipLines(c,-1)
+        // c.fillStyle = '#530060'
+        c.strokeStyle = '#530060'
+        c.lineWidth = 2;
+        c.shadowColor = '#530060';
+        c.shadowBlur = 10;
         c.stroke();
+        // c.fill();
         c.restore();
+    }
+    shipLines(c, n) {
+        c.scale(n,1);
+        c.moveTo(0,-10);
+        c.lineTo(9,0);
+        c.lineTo(12,20);
+        c.lineTo(30,25);
+        c.lineTo(30,15);
+        c.lineTo(30,35);
+        c.lineTo(10,40);
+        c.lineTo(10,43);
+        c.lineTo(0,43);
     }
 }

@@ -1,11 +1,24 @@
 class Shape {
+    constructor(name) {
+        this.name = name;
+    }
     toString() {
         return "This shape has an area of " + this.area() + " and perimeter " + this.perimeter();
     }
 }
 
-class Rectangle {
-
+class Rectangle  extends Shape{
+    constructor(width, height) {
+        super('rectangle');
+        this.width = width;
+        this.height = height;
+    }
+    area () {
+        return this.height*this.width;
+    }
+     perimeter () {
+         return this.height*2+this.width*2;
+     }
     // A rectangle is a shape
     // Every rectangle has a width and a height
     // Implement the constructor
@@ -13,7 +26,11 @@ class Rectangle {
     // The constructor has two arguments: width and height
 }
 
-class Square {
+class Square extends Rectangle { 
+    constructor(size) {
+        super(size, size);
+        this.name = 'square';
+    }
     // A square is a rectangle
     // Every square has a width and a height
     // The height and width of a square are always the same

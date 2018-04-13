@@ -10,4 +10,17 @@ class Shape {
         return this.shapeName + " with area " +
           this.area() + " and perimeter " + this.perimeter();
     }
+} 
+class Rectangle extends Shape {
+    constructor(width, height) {
+        super('rectangle');
+        this.height = height;
+        this.width = width;
+    }
+    area () {
+        return this.height * this.width;
+    }
+    perimeter () {
+        return 2*this.height + 2*this.width;
+    }
 }
