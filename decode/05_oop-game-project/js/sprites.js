@@ -12,8 +12,11 @@ ship.lineTo(0,28);
 
 
 let bulletSprite = new Path2D();
-bulletSprite.moveTo(0,3)
-bulletSprite.lineTo(0,-3)
+bulletSprite.lineCap = 'rounded'
+bulletSprite.moveTo(-5,0)
+bulletSprite.lineTo(0,-10)
+bulletSprite.lineTo(5,0)
+
 
 // let sparkSprites = [];
 

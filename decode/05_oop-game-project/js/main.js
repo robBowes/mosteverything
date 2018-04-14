@@ -27,6 +27,8 @@ let bullets = Array(100).fill();
 let sparks = Array(10).fill();
 let powerUps = Array(3).fill();
 let lastPowerUp = 0;
+let background;
+let lastFrame =0;
 
 // Preload game images
 // let images = {};
@@ -75,10 +77,13 @@ class Entity {
         this.y+= this.speed*timeDiff;
         return this;
     }
-    isNear(arr) {        
+    isNearArr(arr) {        
         return arr.some((element)=>{       
             return this.radius+element.radius > distanceBetween(element, this);
         });
+    }
+    isNear(element) {
+        return this.radius+element.radius>distanceBetween(element,this)
     }
 }
 
@@ -98,7 +103,7 @@ class Sparks extends Entity {
             ctx.moveTo(0,3*this.age);
             ctx.lineTo(0,6*this.age);
             ctx.moveTo(0,-6*this.age)
-            ctx.rotate(Math.PI*2/5+this.age)
+            ctx.rotate(Math.PI*2/5*Math.random()+this.age)
         }
         ctx.stroke();
         ctx.restore();
@@ -128,12 +133,6 @@ class Enemy extends Entity{
         // Each enemy should have a different speed
         this.speed = Math.random() / 10;
     }
-    
-    // update(timeDiff) {
-    //     this.y = (this.y + timeDiff * this.speed);
-    // }
-    
-
     hit(hits) {
         this.radius-=hits;
     }
@@ -226,6 +225,32 @@ class PowerUp extends Entity {
     }
 }
 
+class Background {
+    constructor() {
+        this.gridSize = 50;
+        this.offScreenCanvas = document.createElement('canvas');
+        this.offScreenCanvas.width = GAME_WIDTH;
+        this.offScreenCanvas.height = GAME_HEIGHT*2;
+        this.offScreenContext = this.offScreenCanvas.getContext('2d');
+        this.offScreenContext.fillStyle = 'black'
+        // this.offScreenContext.save()
+        this.offScreenContext.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT)
+        // this.offScreenContext.restore();
+        this.offScreenContext.strokeStyle = 'purple';
+        // this.offScreenContext.fillStyle = 'white'
+        this.offScreenContext.shadowColor = 'purple';
+        this.offScreenContext.shadowBlur = 8;
+        this.offScreenContext.lineWidth =2;
+        for (let i = 0; i<GAME_WIDTH/this.gridSize; i++) {
+            for (let j = 0; j < GAME_HEIGHT/this.gridSize; j++) {
+                this.offScreenContext.rect(i*this.gridSize,j*this.gridSize,this.gridSize,this.gridSize)
+            }
+        }
+        this.offScreenContext.stroke();
+        this.image = this.offScreenContext.getImageData(0,0,GAME_WIDTH,GAME_HEIGHT*2);
+    }
+
+}
 
 /*
 This section is a tiny game engine.
@@ -302,6 +327,7 @@ class Engine {
         bullets = bullets.map(el=>new Bullet());
         sparks = sparks.map(s=>new Sparks())
         powerUps = powerUps.map(p=>new PowerUp());  
+        background = new Background()
         this.gameLoop();
     }
     
@@ -334,9 +360,15 @@ class Engine {
         // ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         
         // Draw a black background
+        ctx.lineWidth = 4;
         ctx.save();
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
+        // ctx.fillStyle = 'black';
+        // ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
+        
+        let xoff = Math.floor(currentFrame*0.15%GAME_HEIGHT)
+        
+        ctx.putImageData(background.image,0,xoff,0,0,GAME_WIDTH,GAME_HEIGHT)
+        ctx.putImageData(background.image,0,xoff-GAME_HEIGHT+5,0,0,GAME_WIDTH,GAME_HEIGHT)
         ctx.restore();
         
         // determine onscreenBullets bullets
@@ -345,8 +377,9 @@ class Engine {
 
         // Update and render bullets
         ctx.save()
-        ctx.shadowColor = 'white';
-        ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        // ctx.shadowBlur = 10;
         onscreenBullets.forEach(bullet=>{
            if (!bullet) return;
             bullet.update(timeDiff);
@@ -355,7 +388,7 @@ class Engine {
         ctx.restore()
 
         // Add Power Ups
-        if (currentFrame - lastPowerUp > 3000){
+        if (currentFrame - lastPowerUp > 5000){
             let x =powerUps.find(notVisible);
             if (x) x.randomAdd();
             lastPowerUp = currentFrame;
@@ -366,6 +399,7 @@ class Engine {
 
         // Update and render powerups
         ctx.save()
+        // ctx.lineWidth = 2;
         ctx.strokeStyle = '#51CFEE'
         ctx.shadowColor = '#51CFEE';
         ctx.shadowBlur = 10;
@@ -376,20 +410,25 @@ class Engine {
         ctx.restore()
         
         // If player intersects with powerup, give power to player
-        if (this.player.isNear(powerUps)) {
-            this.player.power += 2000;
-            powerUps[0].moveOffScreen();
-            console.log('powerup');
-            
-
-        }
+        // if (this.player.isNearArr(powerUps)) {
+        //     this.player.power += 2000;
+        //     powerUps[0].moveOffScreen();
+        //     console.log('powerup');
+        // }
+        powerUps.forEach((powerUp, i)=>{
+            if(this.player.isNear(powerUp)) {
+                this.player.power += 2000;
+                powerUps[i].moveOffScreen()
+            }
+        })
         
         
         // draw the enemies
+        ctx.save()
         ctx.strokeStyle = 'white'
-        ctx.lineWidth = 2;
+        // ctx.lineWidth = 2;
         this.enemies.forEach(enemy => enemy.render(ctx)); 
-        
+        ctx.restore();
         
         this.player.render(ctx); // draw the player
         
@@ -404,9 +443,7 @@ class Engine {
                     hits.forEach(hit=>{
                         let available = sparks.find(notVisible);
                         if (available) available.move(hit.x,hit.y,currentFrame);
-                    })
-                    hits.forEach(bullet=>{
-                        bullet.moveOffScreen()
+                        hit.moveOffScreen()
                     })
                 }
             }
@@ -414,12 +451,16 @@ class Engine {
         this.setupEnemies();
         
         // Update and render sparks
+        ctx.save()
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
         if (sparks.length>0) {
             sparks.filter(s=>s.visible).forEach((spark, i)=>{
                 spark.render(currentFrame);
                 spark.update(currentFrame);
             })
         }
+        ctx.restore();
         /*
         *
         *
@@ -433,7 +474,7 @@ class Engine {
         if (keys.esc) throw new Error('manual abort');
         
         // Check if player is dead
-        if (this.player.isNear(this.enemies)) {
+        if (this.player.isNearArr(this.enemies)) {
             // If they are dead, then it's game over!
             ctx.font = 'bold 30px Impact';
             ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT)

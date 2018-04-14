@@ -6,7 +6,7 @@ body {
 }
 canvas {
     display: block;
-    margin: auto;
+    margin: 2em auto;
     border: 5px rgb(197, 21, 197) solid;
     width: 90%;
 }
