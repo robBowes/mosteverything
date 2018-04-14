@@ -4,7 +4,7 @@ let GAME_HEIGHT;
 
 const ENEMY_BASE_RADIUS = 100;
 const ENEMY_MIN_RADIUS = 50;
-const MAX_ENEMIES = 8;
+const MAX_ENEMIES = 6;
 
 const PLAYER_WIDTH = 20;
 const PLAYER_HEIGHT = 40;
@@ -26,6 +26,7 @@ let keys = {'left':false,'right':false, 'space':false};
 let bullets = Array(100).fill();
 let sparks = Array(10).fill();
 let powerUps = Array(3).fill();
+let lastPowerUp = 0;
 
 // Preload game images
 // let images = {};
@@ -42,17 +43,42 @@ let powerUps = Array(3).fill();
  * @class Entity
  */
 class Entity {
-    constructor(x, y, sprites) {
+    constructor(x, y, radius) {
         this.x = x;
         this.y = y;
-        this.sprites = sprites;
+        this.visible = false;
+        this.radius = radius;
+        this.speed = 0;
+    }
+    render(ctx) {
+        ctx.save();
+        ctx.translate(this.x,Math.floor(this.y))
+        ctx.beginPath();
+        ctx.arc(0,0,this.radius,0,2*Math.PI)
+        ctx.stroke()
+        ctx.restore();
+    }
+    add (x,y) {
+        this.x = x;
+        this.y = y;
+        this.visible = true;
+    }
+    randomAdd () {
+        this.add(Math.floor(Math.random()*GAME_WIDTH),-this.radius);
+    }
+    moveOffScreen () {
+        this.x = -10;
+        this.y = -10;
         this.visible = false;
     }
-    render (n) {
-        ctx.save()
-        ctx.translate(this.x,this.y);
-        ctx.stroke(this.sprites[n])
-        ctx.restore();
+    update(timeDiff) {
+        this.y+= this.speed*timeDiff;
+        return this;
+    }
+    isNear(arr) {        
+        return arr.some((element)=>{       
+            return this.radius+element.radius > distanceBetween(element, this);
+        });
     }
 }
 
@@ -103,18 +129,11 @@ class Enemy extends Entity{
         this.speed = Math.random() / 10;
     }
     
-    update(timeDiff) {
-        this.y = (this.y + timeDiff * this.speed);
-    }
+    // update(timeDiff) {
+    //     this.y = (this.y + timeDiff * this.speed);
+    // }
     
-    render(ctx) {
-        ctx.save();
-        ctx.translate(this.x,Math.floor(this.y))
-        ctx.beginPath();
-        ctx.arc(0,0,this.radius,0,2*Math.PI)
-        ctx.stroke()
-        ctx.restore();
-    }
+
     hit(hits) {
         this.radius-=hits;
     }
@@ -122,7 +141,7 @@ class Enemy extends Entity{
 
 class Player extends Entity{
     constructor() {
-        super(GAME_WIDTH/2, GAME_HEIGHT-100);
+        super(GAME_WIDTH/2, GAME_HEIGHT-100, 20);
         this.power = 2000;
         this.sprite = ship; 
         this.speed = 0;
@@ -151,7 +170,7 @@ class Player extends Entity{
             this.speed = 0;
             this.x = GAME_WIDTH - 41
         }
-        this.power-=timeDiff;
+        if(this.power>0)this.power-=timeDiff;
     }
     shoot (bullet, time) {
         if (!bullet || this.power<1) return;
@@ -188,11 +207,9 @@ class Player extends Entity{
 class Bullet extends Entity{
     constructor() {
         super(-10, -10);
+        this.speed = -0.25
     }
-    update() {
-        this.y-=5;
-        return this;
-    }
+
     render() {
         ctx.save();
         ctx.translate(Math.floor(this.x),Math.floor(this.y))
@@ -204,8 +221,8 @@ class Bullet extends Entity{
 
 class PowerUp extends Entity {
     constructor(x,y) {
-        super(x,y);
-
+        super(x,y, 20);
+        this.speed = 0.25;
     }
 }
 
@@ -243,7 +260,6 @@ class Engine {
     // This method finds a random spot where there is no enemy, and puts one in there
     addEnemy() {
         let enemySpots = GAME_WIDTH / ENEMY_BASE_RADIUS;
-        
         let enemySpot;
         // Keep looping until we find a free enemy spot at random
         while (!enemySpot && this.enemies[enemySpot]) {
@@ -308,8 +324,8 @@ class Engine {
         this.score += timeDiff;
         
         // Call update on all enemies
-        ctx.strokeStyle = 'white'
-        ctx.lineWidth = 2;
+
+
         this.enemies.forEach(enemy => enemy.update(timeDiff));
         
         this.player.update(timeDiff);
@@ -318,31 +334,62 @@ class Engine {
         // ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         
         // Draw a black background
+        ctx.save();
         ctx.fillStyle = 'black'
-        ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT)
+        ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
+        ctx.restore();
         
-        // determine onscreen bullets
-        bullets.forEach(bullet=>{
-            if (bullet.x>0&&bullet.x<GAME_WIDTH&&bullet.y>0&&bullet.y<GAME_HEIGHT) bullet.visible = true;
-            else bullet.visible = false;
-        });
+        // determine onscreenBullets bullets
+        bullets.forEach(setIsVisible);
+        let onscreenBullets = bullets.filter(isVisible);
 
-        let onscreen = bullets.filter(bullet=>bullet.visible);
-        onscreen.forEach(bullet=>{
-           if (!bullet) return;  
-           bullet.visible = true;         
-            bullet.update();
+        // Update and render bullets
+        ctx.save()
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 10;
+        onscreenBullets.forEach(bullet=>{
+           if (!bullet) return;
+            bullet.update(timeDiff);
             bullet.render();
         });
+        ctx.restore()
+
+        // Add Power Ups
+        if (currentFrame - lastPowerUp > 3000){
+            let x =powerUps.find(notVisible);
+            if (x) x.randomAdd();
+            lastPowerUp = currentFrame;
+        }
+
+        //determine onscreen powerups
+        powerUps.forEach(setIsVisible)
+
+        // Update and render powerups
+        ctx.save()
+        ctx.strokeStyle = '#51CFEE'
+        ctx.shadowColor = '#51CFEE';
+        ctx.shadowBlur = 10;
+        powerUps.filter(isVisible).forEach(powerUp=>{
+            powerUp.update(timeDiff)
+            powerUp.render(ctx);
+        });
+        ctx.restore()
         
-        let offscreen = bullets.filter(el=>!el.visible)
+        // If player intersects with powerup, give power to player
+        if (this.player.isNear(powerUps)) {
+            this.player.power += 2000;
+            powerUps[0].moveOffScreen();
+            console.log('powerup');
+            
+
+        }
         
-        // if space is down shoot bullet
-        if (keys.space) this.player.shoot(offscreen[0], currentFrame)
         
-        if (keys.esc) throw new Error('manual abort');
+        // draw the enemies
+        ctx.strokeStyle = 'white'
+        ctx.lineWidth = 2;
+        this.enemies.forEach(enemy => enemy.render(ctx)); 
         
-        this.enemies.forEach(enemy => enemy.render(ctx)); // draw the enemies
         
         this.player.render(ctx); // draw the player
         
@@ -350,17 +397,16 @@ class Engine {
         this.enemies.forEach((enemy, enemyIdx) => {
             if (enemy.y > GAME_HEIGHT || enemy.radius < ENEMY_MIN_RADIUS) {
                 delete this.enemies[enemyIdx];
-            } else if( onscreen.length>0) {
-                let hits = onscreen.filter(bullet=>distanceBetween(bullet, enemy)<enemy.radius);
+            } else if( onscreenBullets.length>0) {
+                let hits = onscreenBullets.filter(bullet=>distanceBetween(bullet, enemy)<enemy.radius);
                 if (hits.length>0) {
                     enemy.hit(hits.length);
                     hits.forEach(hit=>{
-                        let available = sparks.find(s=>!s.visible);
+                        let available = sparks.find(notVisible);
                         if (available) available.move(hit.x,hit.y,currentFrame);
                     })
                     hits.forEach(bullet=>{
-                        bullet.x = -10;
-                        bullet.y = -10;
+                        bullet.moveOffScreen()
                     })
                 }
             }
@@ -374,9 +420,20 @@ class Engine {
                 spark.update(currentFrame);
             })
         }
+        /*
+        *
+        *
+        * 
+        */
+
+        // if space is down shoot bullet
+        if (keys.space) this.player.shoot(bullets.find(b=>!b.visible), currentFrame)
+        
+        // If escape is pressed abort game
+        if (keys.esc) throw new Error('manual abort');
         
         // Check if player is dead
-        if (this.isPlayerDead()) {
+        if (this.player.isNear(this.enemies)) {
             // If they are dead, then it's game over!
             ctx.font = 'bold 30px Impact';
             ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT)
@@ -394,12 +451,7 @@ class Engine {
             requestAnimationFrame(this.gameLoop);
         }
     }
-    isPlayerDead() {
-        return this.enemies.some((enemy)=>{            
-            return PLAYER_WIDTH+enemy.radius > distanceBetween(enemy, this.player);
-            // return PLAYER_WIDTH+ENEMY_BASE_RADIUS/2 > Math.sqrt(Math.pow(el.x -this.player.x,2)+Math.pow(el.y -this.player.y,2))
-        });
-    }
+    
 }
 
 
