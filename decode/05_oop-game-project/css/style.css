@@ -1,0 +1,27 @@
+* {
+    box-sizing: border-box;
+}
+@font-face {
+    font-family: synthwave;
+    src: url('fonts/Lazer84.ttf')
+}
+h1 {
+    font-family: synthwave;
+    text-shadow: 2px 2px aqua;
+    color: rgb(197, 21, 197);
+    font-weight: normal;
+    font-size: 3rem;
+    width: 30%;
+    margin: 0 20%;
+}
+body {
+    background-color: black;
+    background-image: url('background.png');
+    background-size: cover;
+}
+canvas {
+    display: block;
+    margin: 0 auto;
+    border: 5px rgb(197, 21, 197) solid;
+    width: 50%;
+}
