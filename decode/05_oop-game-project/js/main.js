@@ -40,10 +40,10 @@ let lastFrame =0;
 
 
 /**
- * An entity is anything that will be rendered on screen
- * 
- * @class Entity
- */
+* An entity is anything that will be rendered on screen
+* 
+* @class Entity
+*/
 class Entity {
     constructor(x, y, radius) {
         this.x = x;
@@ -51,6 +51,11 @@ class Entity {
         this.visible = false;
         this.radius = radius;
         this.speed = 0;
+        this.image = new Image();
+        this.image.src = this.generateImage();
+    }
+    generateImage() {
+        console.error(`${this.constructor.name} entities must have generateImage() function`)
     }
     render(ctx) {
         ctx.save();
@@ -149,6 +154,29 @@ class Player extends Entity{
         this.lastShot = 0;
         this.lastGun = 1;
     }
+    generateImage () {
+        this.noCanvas = document.createElement('canvas');
+        this.noCanvas.width = 100;
+        this.noCanvas.height = 100;
+        this.c = this.noCanvas.getContext('2d');
+        this.c.strokeStyle = '#FF00AD';
+        this.c.shadowColor = '#FF00AD';
+        this.c.shadowBlur = 10;
+        this.c.lineWidth = 2;
+        
+        for (let i = -1; i < 2; i+=2) {
+            this.c.moveTo(0,-25 * i);
+            this.c.lineTo(9,-15 * i);
+            this.c.lineTo(12,5 * i);
+            this.c.lineTo(30,10* i);
+            this.c.lineTo(30,0* i);
+            this.c.lineTo(30,25* i);
+            this.c.lineTo(10,25* i);
+            this.c.lineTo(10,28* i);
+            this.c.lineTo(0,28* i);
+        }
+        this.c.stroke()
+    }
     update(timeDiff) {
         if (keys.left) {
             this.speed-=0.05;
@@ -208,13 +236,26 @@ class Bullet extends Entity{
         super(-10, -10);
         this.speed = -0.25
     }
-
     render() {
-        ctx.save();
-        ctx.translate(Math.floor(this.x),Math.floor(this.y))
-        ctx.stroke(bulletSprite);
-        ctx.restore();
-        return this;
+        ctx.drawImage(this.image,this.x-7,this.y-10);
+    }
+    generateImage () {
+        this.offScreenCanvas = document.createElement('canvas');
+        this.offScreenCanvas.width = 20;
+        this.offScreenCanvas.height = 20;
+        this.offScreenContext = this.offScreenCanvas.getContext('2d');
+        this.offScreenContext.lineWidth = 2;
+        // this.offScreenContext.lineCap = 'rounded';
+        this.offScreenContext.strokeStyle = 'white';
+        this.offScreenContext.shadowColor = 'white';
+        this.offScreenContext.shadowBlur = 2;
+        // this.offScreenContext.fillStyle = 'white'
+        this.offScreenContext.moveTo(5,10);
+        this.offScreenContext.lineTo(7,0);
+        this.offScreenContext.lineTo(9,10);
+        this.offScreenContext.stroke();
+        // return this.offScreenContext.getImageData(0,0,20,20);
+        return this.offScreenCanvas.toDataURL('bullet/png')
     }
 }
 
@@ -232,12 +273,9 @@ class Background {
         this.offScreenCanvas.width = GAME_WIDTH;
         this.offScreenCanvas.height = GAME_HEIGHT*2;
         this.offScreenContext = this.offScreenCanvas.getContext('2d');
-        this.offScreenContext.fillStyle = 'black'
-        // this.offScreenContext.save()
-        this.offScreenContext.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT)
-        // this.offScreenContext.restore();
+        this.offScreenContext.fillStyle = 'black';
+        this.offScreenContext.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
         this.offScreenContext.strokeStyle = 'purple';
-        // this.offScreenContext.fillStyle = 'white'
         this.offScreenContext.shadowColor = 'purple';
         this.offScreenContext.shadowBlur = 8;
         this.offScreenContext.lineWidth =2;
@@ -249,7 +287,7 @@ class Background {
         this.offScreenContext.stroke();
         this.image = this.offScreenContext.getImageData(0,0,GAME_WIDTH,GAME_HEIGHT*2);
     }
-
+    
 }
 
 /*
@@ -322,7 +360,7 @@ class Engine {
                 keys.space = false;
             }
         });
-
+        
         // Initialize global vars
         bullets = bullets.map(el=>new Bullet());
         sparks = sparks.map(s=>new Sparks())
@@ -350,8 +388,7 @@ class Engine {
         this.score += timeDiff;
         
         // Call update on all enemies
-
-
+        
         this.enemies.forEach(enemy => enemy.update(timeDiff));
         
         this.player.update(timeDiff);
@@ -359,44 +396,42 @@ class Engine {
         // Draw everything!
         // ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         
-        // Draw a black background
+        // Draw the generated background
         ctx.lineWidth = 4;
         ctx.save();
-        // ctx.fillStyle = 'black';
-        // ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
-        
         let xoff = Math.floor(currentFrame*0.15%GAME_HEIGHT)
-        
         ctx.putImageData(background.image,0,xoff,0,0,GAME_WIDTH,GAME_HEIGHT)
         ctx.putImageData(background.image,0,xoff-GAME_HEIGHT+5,0,0,GAME_WIDTH,GAME_HEIGHT)
         ctx.restore();
         
+        
         // determine onscreenBullets bullets
         bullets.forEach(setIsVisible);
         let onscreenBullets = bullets.filter(isVisible);
-
+        
         // Update and render bullets
         ctx.save()
         ctx.strokeStyle = 'white';
+        ctx.shadowColor = 'white'
         ctx.lineWidth = 2;
-        // ctx.shadowBlur = 10;
+        ctx.shadowBlur = 10;
         onscreenBullets.forEach(bullet=>{
-           if (!bullet) return;
+            if (!bullet) return;
             bullet.update(timeDiff);
             bullet.render();
         });
         ctx.restore()
-
+        
         // Add Power Ups
         if (currentFrame - lastPowerUp > 5000){
             let x =powerUps.find(notVisible);
             if (x) x.randomAdd();
             lastPowerUp = currentFrame;
         }
-
+        
         //determine onscreen powerups
         powerUps.forEach(setIsVisible)
-
+        
         // Update and render powerups
         ctx.save()
         // ctx.lineWidth = 2;
@@ -466,12 +501,10 @@ class Engine {
         *
         * 
         */
-
+        
         // if space is down shoot bullet
         if (keys.space) this.player.shoot(bullets.find(b=>!b.visible), currentFrame)
         
-        // If escape is pressed abort game
-        if (keys.esc) throw new Error('manual abort');
         
         // Check if player is dead
         if (this.player.isNearArr(this.enemies)) {
@@ -486,6 +519,9 @@ class Engine {
             // ctx.font = 'bold 30px Impact';
             // ctx.fillStyle = '#ffffff';
             // ctx.fillText(this.score, 5, 30);
+            
+            // If escape is pressed abort game
+            if (keys.esc) throw new Error('manual abort');
             
             // Set the time marker and redraw
             this.lastFrame = Date.now();
