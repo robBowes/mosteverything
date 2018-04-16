@@ -13,6 +13,6 @@ setIsVisible = (element) => {
 isVisible = (element) => element.visible;
 
 
-complement = (pred) => (...args) => !pred(...args)
+complement = (pred) => (...args) => !pred(...args);
 
 let = notVisible = complement(isVisible);

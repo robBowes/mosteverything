@@ -2,9 +2,11 @@
 let GAME_WIDTH;
 let GAME_HEIGHT;
 
+const GAME_SPEED = 1.5;
+
 const ENEMY_BASE_RADIUS = 50;
 const ENEMY_MIN_RADIUS = 50;
-const MAX_ENEMIES = 4;
+const MAX_ENEMIES = 6;
 
 const PLAYER_WIDTH = 20;
 const PLAYER_HEIGHT = 40;
@@ -23,18 +25,19 @@ let gameEngine;
 let canvas;
 let ctx;
 let keys = { 'left': false, 'right': false, 'space': false };
-let color = {
+const color = {
     'blue': '#4deeea',
     'green': '#74ee15',
     'yellow': '#ffe700',
     'pink': '#f000ff',
-    'red': '#fe0000'
-
+    'red': '#fe0000',
+    'orange': '#FD5F00',
 };
 let bullets = Array(100).fill();
-let sparks = Array(10).fill();
+let sparks = Array(25).fill();
 let powerUps = Array(3).fill();
 let enemies = Array(10).fill();
+let explosions = Array(10).fill();
 let lastPowerUp = 0;
 let background;
 let lastFrame = 0;
@@ -77,7 +80,7 @@ class Entity {
         this.visible = true;
     }
     update(timeDiff) {
-        this.y += this.speed * timeDiff;
+        this.y += Math.floor(this.speed * timeDiff * GAME_SPEED);
         return this;
     }
     isNearArr(arr) {
@@ -95,13 +98,15 @@ class Entity {
 
 class Sparks extends Entity {
     constructor() {
-        super(-10, -10)
+        super(-1000, -1000)
         this.creationTime = 0;
         this.move = this.move.bind(this);
         this.update = this.update.bind(this);
         this.age = 0;
+        this.size = 80;
+        this.maxAge = 250;
     }
-    generateImage () {
+    generateImage() {
         this.offScreenCanvas = document.createElement('canvas');
         this.offScreenCanvas.width = 240;
         this.offScreenCanvas.height = 80;
@@ -113,12 +118,12 @@ class Sparks extends Entity {
         this.offScreenContext.beginPath();
         for (let j = 0; j <= 3; j++) {
             this.offScreenContext.save()
-            this.offScreenContext.translate(40 + j*80,40);
+            this.offScreenContext.translate(40 + j * 80, 40);
             for (let index = 0; index < 10; index++) {
-                this.offScreenContext.moveTo(0, 20 );
-                this.offScreenContext.lineTo(0, 40 );
-                this.offScreenContext.moveTo(0, -40 )
-                this.offScreenContext.rotate(Math.PI * 2 / 10 + j)
+                this.offScreenContext.moveTo(0, 20);
+                this.offScreenContext.lineTo(0, 40);
+                this.offScreenContext.moveTo(0, -40);
+                this.offScreenContext.rotate(Math.PI * 2 / 10 + j);
             }
             this.offScreenContext.restore();
         }
@@ -126,26 +131,13 @@ class Sparks extends Entity {
         return this.offScreenCanvas.toDataURL('spark/png')
     }
     render(currentFrame) {
-        ctx.drawImage(this.image, 0+Math.floor((this.age/5)%3)*80,0,80,80,this.x -40,this.y-40,80,80)
+        ctx.drawImage(this.image, 0 + Math.floor((this.age / 5) % 3) * this.size, 0, this.size, this.size, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size)
         this.age++;
     }
-    // render(currentFrame) {
-    //     ctx.save();
-    //     ctx.translate(this.x, this.y);
-    //     ctx.beginPath();
-    //     for (let index = 0; index < 5; index++) {
-    //         ctx.moveTo(0, 3 * this.age);
-    //         ctx.lineTo(0, 6 * this.age);
-    //         ctx.moveTo(0, -6 * this.age)
-    //         ctx.rotate(Math.PI * 2 / 5 * Math.random() + this.age)
-    //     }
-    //     ctx.stroke();
-    //     ctx.restore();
-    //     this.age++;
-    // }
     update(currentFrame) {
-        if (currentFrame - this.creationTime > 100) {
+        if (currentFrame - this.creationTime > this.maxAge) {
             this.age = 0;
+            this.creationTime = 0;
             this.moveOffScreen();
         };
     }
@@ -157,13 +149,51 @@ class Sparks extends Entity {
     }
 }
 
+class Explosion extends Sparks {
+    constructor() {
+        super();
+        this.age = 0;
+        this.size = 200;
+        this.radius = 50;
+        this.maxAge = 1000;
+    }
+    generateImage() {
+        this.offScreenCanvas = document.createElement('canvas');
+        this.offScreenCanvas.width = 600;
+        this.offScreenCanvas.height = 200;
+        this.offScreenContext = this.offScreenCanvas.getContext('2d');
+        this.offScreenContext.lineWidth = 2;
+        this.offScreenContext.strokeStyle = color.orange;
+        this.offScreenContext.shadowColor = color.orange;
+        this.offScreenContext.fillStyle = color.orange;
+        this.offScreenContext.shadowBlur = 10;
+        this.offScreenContext.beginPath();
+        for (let j = 0; j <= 3; j++) {
+            this.offScreenContext.save()
+            this.offScreenContext.translate(100 + j * 200, 100);
+            this.offScreenContext.arc(0, 0, ENEMY_BASE_RADIUS - 20 + j * 10, 0, Math.PI * 2)
+            this.offScreenContext.fill()
+            this.offScreenContext.beginPath();
+            for (let index = 0; index < 20; index++) {
+                this.offScreenContext.moveTo(0, 20 + 20 * j);
+                this.offScreenContext.lineTo(0, 40 + 20 * j);
+                this.offScreenContext.moveTo(0, -40 + 20 * j);
+                this.offScreenContext.rotate(Math.PI * 2 / 20);
+            }
+            this.offScreenContext.restore();
+            this.offScreenContext.stroke();
+        }
+        return this.offScreenCanvas.toDataURL('explosion/png')
+    }
+}
+
 // This section is where you will be doing most of your coding
 class Enemy extends Entity {
     constructor() {
         super(-1000, -1000, ENEMY_BASE_RADIUS);
         this.radius = ENEMY_BASE_RADIUS;
         // Each enemy should have a different speed
-        this.speed = Math.random() / 10;
+        this.speed = Math.random() / 5;
         this.hp = 10;
     }
     generateImage() {
@@ -171,7 +201,7 @@ class Enemy extends Entity {
         this.noCanvas.width = ENEMY_BASE_RADIUS * 2 + 10;
         this.noCanvas.height = ENEMY_BASE_RADIUS * 2 + 10;
         this.c = this.noCanvas.getContext('2d');
-        this.c.lineWidth = 8;
+        this.c.lineWidth = 12;
         this.c.strokeStyle = color.red;
         this.c.shadowBlur = 10;
         this.c.shadowColor = color.red;
@@ -302,21 +332,21 @@ class PowerUp extends Entity {
         this.speed = 0.25;
     }
     generateImage() {
-        this.noCanvas = document.createElement('canvas');
-        this.noCanvas.width = 50;
-        this.noCanvas.height = 50;
-        this.c = this.noCanvas.getContext('2d');
-        this.c.lineWidth = 4;
-        this.c.strokeStyle = color.blue;
-        this.c.shadowBlur = 10;
-        this.c.shadowColor = color.blue;
-        this.c.fillStyle = color.blue;
-        this.c.translate(25, 25);
-        this.c.beginPath();
-        this.c.arc(0, 0, this.radius, 0, 2 * Math.PI);
-        this.c.stroke();
-        this.c.fill();
-        return this.noCanvas.toDataURL('powerup/png');
+        let noCanvas = document.createElement('canvas');
+        noCanvas.width = 50;
+        noCanvas.height = 50;
+        let c = noCanvas.getContext('2d');
+        c.lineWidth = 4;
+        c.strokeStyle = color.blue;
+        c.shadowBlur = 10;
+        c.shadowColor = color.blue;
+        c.fillStyle = color.blue;
+        c.translate(25, 25);
+        c.beginPath();
+        c.arc(0, 0, this.radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        return noCanvas.toDataURL('powerup/png');
     }
     render(ctx) {
         ctx.drawImage(this.image, this.x - this.image.width / 2, this.y - this.image.height / 2)
@@ -431,6 +461,7 @@ class Engine {
         sparks = sparks.map(s => new Sparks())
         powerUps = powerUps.map(p => new PowerUp());
         enemies = enemies.map(e => new Enemy());
+        explosions = explosions.map(e => new Explosion())
         background = new Background()
         this.gameLoop();
     }
@@ -475,6 +506,7 @@ class Engine {
             }
         }
 
+        // Update and render ENEMIES
         onscreenEnemies.forEach(enemy => {
             if (!enemy) return;
             enemy.update(timeDiff);
@@ -505,7 +537,14 @@ class Engine {
 
         // Check if any enemies should die
         enemies.forEach((enemy, enemyIdx) => {
-            if (enemy.y > GAME_HEIGHT || enemy.hp < 0) {
+            if (enemy.y > GAME_HEIGHT + ENEMY_BASE_RADIUS) {
+                // if the enemy has moved off the screen kill it
+                enemy.moveOffScreen();
+                enemy.hp = 10;
+            } else if (enemy.hp < 0) {
+                // if the enemy has less than 0 hp kill it and spawn an explosion
+                let availableExplosion = explosions.find(notVisible);
+                if (availableExplosion) availableExplosion.move(enemy.x, enemy.y, currentFrame);
                 enemy.moveOffScreen();
                 enemy.hp = 10;
             } else if (onscreenBullets.length > 0) {
@@ -520,14 +559,7 @@ class Engine {
                 }
             }
         });
-        //determine onscreen powerups
-        powerUps.forEach(setIsVisible)
 
-        // Update and render powerups
-        powerUps.filter(isVisible).forEach(powerUp => {
-            powerUp.update(timeDiff)
-            powerUp.render(ctx);
-        });
 
         // If player intersects with powerup, give power to player
         powerUps.forEach((powerUp, i) => {
@@ -537,20 +569,29 @@ class Engine {
             }
         })
 
-        this.player.render(ctx); // draw the player
+        // draw the player
+        this.player.render(ctx);
 
+        //determine onscreen powerups
+        powerUps.forEach(setIsVisible)
+
+        // Update and render powerups
+        powerUps.filter(isVisible).forEach(powerUp => {
+            powerUp.update(timeDiff)
+            powerUp.render(ctx);
+        });
 
         // Update and render sparks
-        // ctx.save()
-        // ctx.strokeStyle = 'white';
-        // ctx.lineWidth = 2;
-        if (sparks.length > 0) {
-            sparks.filter(s => s.visible).forEach((spark, i) => {
-                spark.render(currentFrame);
-                spark.update(currentFrame);
-            })
-        }
-        // ctx.restore();
+        sparks.filter(s => s.visible).forEach((spark, i) => {
+            spark.render(currentFrame);
+            spark.update(currentFrame);
+        })
+        // Update and render explosions
+        explosions.filter(s => s.visible).forEach((explosion, i) => {
+            explosion.render(currentFrame);
+            explosion.update(currentFrame);
+        })
+
 
         // if space is down shoot bullet
         if (keys.space) this.player.shoot(bullets.find(b => !b.visible), currentFrame)
